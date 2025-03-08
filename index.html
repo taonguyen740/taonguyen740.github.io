@@ -23,6 +23,7 @@
         transform-style: preserve-3d;
         perspective: 1000px;
         z-index: 1;
+        will-change: transform;
       }
 
       @media (max-width: 640px) {
@@ -36,6 +37,8 @@
         height: 100%;
         position: relative;
         animation: float 6s ease-in-out infinite;
+        will-change: transform;
+        backface-visibility: hidden;
       }
 
       @keyframes float {
@@ -50,11 +53,13 @@
 
       .rose {
         position: absolute;
-        width: 60px;
-        height: 60px;
+        width: 40px;
+        height: 40px;
         transform-style: preserve-3d;
-        animation: bloom 3s ease-out forwards;
+        animation: bloom 2s ease-out forwards;
         opacity: 0;
+        will-change: transform, opacity;
+        backface-visibility: hidden;
       }
 
       @keyframes bloom {
@@ -128,8 +133,8 @@
 
       .fragrance {
         position: absolute;
-        width: 10px;
-        height: 10px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
         background: radial-gradient(
           circle,
@@ -137,7 +142,8 @@
           rgba(255, 255, 255, 0) 70%
         );
         opacity: 0;
-        animation: fragrance 6s linear infinite;
+        animation: fragrance 4s linear infinite;
+        will-change: transform, opacity;
       }
 
       @keyframes fragrance {
@@ -708,6 +714,7 @@
         border-radius: 50% 0 50% 50%;
         box-shadow: inset 0 0 10px rgba(255, 0, 0, 0.3);
         will-change: transform;
+        backface-visibility: hidden;
       }
 
       .falling-petal.small {
@@ -1129,7 +1136,8 @@
             2 * Math.cos(3 * t) -
             Math.cos(4 * t)
           );
-          return { x: x * 8 + 300, y: y * 8 + 300 };
+          // Center the heart by using half of container width (300)
+          return { x: x * 8 + 150, y: y * 8 + 300 };
         };
 
         for (let i = 0; i < count; i++) {
@@ -1140,98 +1148,83 @@
       }
 
       // Create roses
-      const roseCount = 60;
+      const roseCount = 80; // Reduce rose count for better performance
       const coords = createHeartCoords(roseCount);
 
       function createRoses() {
-        const totalDelay = roseCount * 50; // Total time to create all roses
+        const fragment = document.createDocumentFragment(); // Use document fragment
+        const totalDelay = roseCount * 50;
 
         for (let i = 0; i < roseCount; i++) {
           setTimeout(() => {
             const rose = document.createElement("div");
             rose.className = "rose";
-            rose.style.left = `${coords[i].x - 30}px`;
-            rose.style.top = `${coords[i].y - 30}px`;
+            rose.style.left = `${coords[i].x - 15}px`; // Adjust for new size
+            rose.style.top = `${coords[i].y - 15}px`;
             rose.style.animationDelay = `${i * 50}ms`;
 
             const roseInner = document.createElement("div");
             roseInner.className = "rose-inner";
 
-            // Create petals
-            const petalCount = 8;
+            // Reduce petal count
+            const petalCount = 6;
+            const fragment = document.createDocumentFragment();
             for (let j = 0; j < petalCount; j++) {
               const petal = document.createElement("div");
               petal.className = "petal";
               const angle = (j / petalCount) * 360;
               petal.style.transform = `rotateY(${angle}deg) rotateX(60deg) translateZ(5px)`;
-              roseInner.appendChild(petal);
+              fragment.appendChild(petal);
             }
+            roseInner.appendChild(fragment);
 
-            // Add sparkles
-            for (let s = 0; s < 3; s++) {
+            // Reduce sparkle count
+            for (let s = 0; s < 2; s++) {
               const sparkle = document.createElement("div");
               sparkle.className = "sparkle";
-              sparkle.style.left = `${Math.random() * 60}px`;
-              sparkle.style.top = `${Math.random() * 60}px`;
+              sparkle.style.left = `${Math.random() * 40}px`;
+              sparkle.style.top = `${Math.random() * 40}px`;
               sparkle.style.animationDelay = `${Math.random() * 4}s`;
               rose.appendChild(sparkle);
-            }
-
-            // Add fragrance particles
-            for (let f = 0; f < 5; f++) {
-              setTimeout(() => {
-                createFragrance(rose);
-              }, f * 1000 + Math.random() * 2000);
             }
 
             rose.appendChild(roseInner);
             heart.appendChild(rose);
 
-            // Start typing animation after the last rose is created and bloomed
             if (i === roseCount - 1) {
-              setTimeout(() => {
-                typeWriter();
-              }, 3000); // Wait additional 3 seconds after last rose for bloom animation
+              setTimeout(typeWriter, 3000);
             }
           }, i * 50);
         }
       }
 
-      // Continuously create fragrance
-      let fragranceInterval;
-
+      // Optimize fragrance creation
       function createFragrance(rose) {
         const fragrance = document.createElement("div");
         fragrance.className = "fragrance";
 
-        // Random position within the rose
-        const left = 20 + Math.random() * 20;
-        const top = 20 + Math.random() * 20;
-
-        // Random direction
+        const left = 15 + Math.random() * 10;
+        const top = 15 + Math.random() * 10;
         const xDir = Math.random() * 2 - 1;
         const yDir = Math.random();
 
-        fragrance.style.setProperty("--x-dir", xDir);
-        fragrance.style.setProperty("--y-dir", yDir);
-        fragrance.style.left = `${left}px`;
-        fragrance.style.top = `${top}px`;
+        fragrance.style.cssText = `
+          left: ${left}px;
+          top: ${top}px;
+          --x-dir: ${xDir};
+          --y-dir: ${yDir};
+        `;
 
         rose.appendChild(fragrance);
 
-        // Remove after animation completes
-        setTimeout(() => {
-          if (rose.contains(fragrance)) {
-            rose.removeChild(fragrance);
-          }
-        }, 6000);
+        setTimeout(() => fragrance.remove(), 4000);
       }
 
       // Typing animation for main message
       const typingText = document.getElementById("typing-text");
       const typingPoem = document.getElementById("typing-poem");
       const typingSignature = document.getElementById("typing-signature");
-      const message = "Tặng Hà, chúc Hà ngày mới vui vẻ nhé!";
+      const message = "Tặng Hà, chúc Hà ngày 8/3 vui vẻ nhé!";
       const poemLines = [
         "On this special Women's Day,",
         "Wish the beautiful lady a joyful day!",
@@ -1326,103 +1319,56 @@
 
       function createFallingPetal() {
         const petal = document.createElement("div");
-
-        // Random size class
         const sizeClass =
           petalSizes[Math.floor(Math.random() * petalSizes.length)];
-        petal.className = `falling-petal ${sizeClass}`;
-
-        // Random position along the width of the screen
-        petal.style.left = `${Math.random() * 100}%`;
-
-        // Start from random positions above the viewport
-        petal.style.top = `${-50 - Math.random() * 100}px`;
-
-        // Random color from our palette
-        petal.style.backgroundColor =
+        const color =
           petalColors[Math.floor(Math.random() * petalColors.length)];
-
-        // Random opacity
-        petal.style.opacity = 0.5 + Math.random() * 0.5;
-
-        // Random rotation
+        const left = Math.random() * 100;
         const initialRotation = Math.random() * 360;
-        petal.style.transform = `rotate(${initialRotation}deg)`;
+        const fallDuration = 5 + Math.random() * 5; // Reduce max duration
 
-        // Random animation duration between 5s and 15s
-        const fallDuration = 5 + Math.random() * 10;
+        petal.className = `falling-petal ${sizeClass}`;
+        petal.style.cssText = `
+          left: ${left}%;
+          top: ${-50 - Math.random() * 100}px;
+          background-color: ${color};
+          opacity: ${0.5 + Math.random() * 0.5};
+          transform: rotate(${initialRotation}deg);
+        `;
 
-        // Create custom keyframes for this petal
-        const keyframeStyle = document.createElement("style");
         const keyframeName = `fall-${Date.now()}-${Math.floor(
           Math.random() * 1000
         )}`;
+        const keyframeStyle = document.createElement("style");
 
-        // Random horizontal movement
-        const startX = Math.random() * 100 - 50; // -50 to 50
-        const midX1 = startX + (Math.random() * 150 - 75); // -75 to 75 from startX
-        const midX2 = midX1 + (Math.random() * 150 - 75); // -75 to 75 from midX1
-        const endX = midX2 + (Math.random() * 150 - 75); // -75 to 75 from midX2
-
-        // Random rotation
-        const midRotation = initialRotation + Math.random() * 180;
-        const endRotation = midRotation + Math.random() * 180;
-
+        // Simplify falling animation
         keyframeStyle.textContent = `
           @keyframes ${keyframeName} {
-            0% {
-              transform: translate(0, 0) rotate(${initialRotation}deg);
-            }
-            25% {
-              transform: translate(${midX1}px, ${
-          window.innerHeight * 0.25
-        }px) rotate(${initialRotation + 90}deg);
-            }
-            50% {
-              transform: translate(${midX2}px, ${
-          window.innerHeight * 0.5
-        }px) rotate(${midRotation}deg);
-            }
-            75% {
-              transform: translate(${endX}px, ${
-          window.innerHeight * 0.75
-        }px) rotate(${midRotation + 90}deg);
-            }
-            100% {
-              transform: translate(${endX + (Math.random() * 50 - 25)}px, ${
+            to {
+              transform: translate(${Math.random() * 200 - 100}px, ${
           window.innerHeight + 50
-        }px) rotate(${endRotation}deg);
+        }px) rotate(${initialRotation + 360}deg);
             }
           }
         `;
+
         document.head.appendChild(keyframeStyle);
-
-        // Apply the animation
-        petal.style.animation = `${keyframeName} ${fallDuration}s ease-in-out forwards`;
-
-        // Add to container
+        petal.style.animation = `${keyframeName} ${fallDuration}s linear forwards`;
         petalsContainer.appendChild(petal);
 
-        // Remove after animation completes
         setTimeout(() => {
-          if (petalsContainer.contains(petal)) {
-            petalsContainer.removeChild(petal);
-          }
-          if (document.head.contains(keyframeStyle)) {
-            document.head.removeChild(keyframeStyle);
-          }
+          petal.remove();
+          keyframeStyle.remove();
         }, fallDuration * 1000);
       }
 
-      // Create initial petals
-      for (let i = 0; i < 50; i++) {
-        setTimeout(() => {
-          createFallingPetal();
-        }, i * 100);
+      // Reduce initial petals
+      for (let i = 0; i < 30; i++) {
+        setTimeout(createFallingPetal, i * 150);
       }
 
-      // Continuously create new petals
-      setInterval(createFallingPetal, 200);
+      // Reduce petal creation frequency
+      setInterval(createFallingPetal, 300);
 
       giftOverlay.addEventListener("click", () => {
         const giftBox = document.querySelector(".gift-box");
