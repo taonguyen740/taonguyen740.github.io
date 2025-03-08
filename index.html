@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Heart Roses</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: black;
+        overflow: hidden;
+      }
+
+      .heart-container {
+        width: 100%;
+        max-width: 600px;
+        height: 600px;
+        position: relative;
+        margin: 0 auto;
+        transform-style: preserve-3d;
+        perspective: 1000px;
+        z-index: 1;
+      }
+
+      @media (max-width: 640px) {
+        .heart-container {
+          height: 400px;
+        }
+      }
+
+      .heart {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        animation: float 6s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0) rotate(0deg);
+        }
+        50% {
+          transform: translateY(-10px) rotate(1deg);
+        }
+      }
+
+      .rose {
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        transform-style: preserve-3d;
+        animation: bloom 3s ease-out forwards;
+        opacity: 0;
+      }
+
+      @keyframes bloom {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        50% {
+          opacity: 0.5;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .rose-inner {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at 30% 30%,
+          #ff0000,
+          #cc0000 60%,
+          #990000 100%
+        );
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.8), 0 0 20px rgba(255, 0, 0, 0.4);
+        transform-style: preserve-3d;
+      }
+
+      .petal {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          #ff0000 0%,
+          #cc0000 50%,
+          #990000 100%
+        );
+        border-radius: 50% 50% 50% 50%;
+        transform-origin: center bottom;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+      }
+
+      .sparkle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background-color: white;
+        border-radius: 50%;
+        opacity: 0;
+        animation: sparkle 4s linear infinite;
+      }
+
+      @keyframes sparkle {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        50% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(0);
+          opacity: 0;
+        }
+      }
+
+      .fragrance {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.8) 0%,
+          rgba(255, 255, 255, 0) 70%
+        );
+        opacity: 0;
+        animation: fragrance 6s linear infinite;
+      }
+
+      @keyframes fragrance {
+        0% {
+          transform: translate(0, 0) scale(0.1);
+          opacity: 0;
+        }
+        20% {
+          opacity: 0.8;
+        }
+        100% {
+          transform: translate(
+              calc(50px - 100px * var(--x-dir)),
+              calc(-100px * var(--y-dir))
+            )
+            scale(2);
+          opacity: 0;
+        }
+      }
+
+      .message-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        width: 100%;
+        padding: 0 1rem;
+        z-index: 1000;
+      }
+
+      .message {
+        position: relative;
+        text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+        min-height: 2.5rem;
+        display: inline-block;
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+        max-width: 100%;
+        width: auto;
+      }
+
+      .typing-text {
+        border-right: 3px solid #ff3333;
+        white-space: nowrap;
+        overflow: hidden;
+        animation: typing 6s steps(60) 1s forwards,
+          blink-caret 0.75s step-end 12;
+        width: 0;
+      }
+
+      .typing-poem {
+        border-right: 3px solid #ff69b4;
+        white-space: pre-line;
+        overflow: hidden;
+        width: 100%;
+        display: block;
+      }
+
+      .poem-line {
+        width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        display: block;
+        opacity: 0;
+        max-width: 100%;
+      }
+
+      .poem-line.typing {
+        opacity: 1;
+        animation: typing-line 2s steps(100, end) forwards;
+      }
+
+      @keyframes typing-line {
+        from {
+          width: 0;
+        }
+        to {
+          width: 100%;
+        }
+      }
+
+      .poem {
+        position: relative;
+        background-color: rgba(255, 192, 203, 0.1);
+        padding: 1.5rem 2.5rem;
+        border-radius: 1rem;
+        box-shadow: 0 0 15px rgba(255, 105, 180, 0.3);
+        text-align: center;
+        line-height: 1.6;
+        max-width: 600px;
+        margin: 0 auto;
+        width: 100%;
+      }
+
+      @keyframes typing {
+        from {
+          width: 0;
+        }
+        to {
+          width: 100%;
+        }
+      }
+
+      @keyframes blink-caret {
+        from,
+        to {
+          border-color: transparent;
+        }
+        50% {
+          border-color: #ff3333;
+        }
+      }
+
+      .message-wrapper {
+        position: relative;
+        margin-bottom: 1.5rem;
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 1rem;
+        border-radius: 1rem;
+        z-index: 1000;
+      }
+
+      .poem-wrapper {
+        position: relative;
+        margin-bottom: 1.5rem;
+        min-height: 60px;
+        max-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-y: auto;
+        scrollbar-width: none;
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 1rem;
+        border-radius: 1rem;
+        z-index: 1000;
+      }
+
+      .poem-wrapper::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+      }
+
+      .signature-wrapper {
+        position: relative;
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 2rem;
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInSignature 1s ease-out 19s forwards;
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 1rem;
+        border-radius: 1rem;
+        z-index: 1000;
+      }
+
+      @keyframes fadeInSignature {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .signature {
+        position: relative;
+        margin-top: 0.5rem;
+        font-style: italic;
+        color: #ff6b6b;
+        min-height: 1.5rem;
+        display: inline-block;
+        text-shadow: 0 0 8px rgba(255, 107, 107, 0.6);
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 0.5rem 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+      }
+
+      .typing-signature {
+        border-right: 3px solid #ff6b6b;
+        white-space: nowrap;
+        overflow: hidden;
+        animation: typing-sig 3s steps(30) 6s forwards,
+          blink-caret 0.75s step-end 8 6s;
+        width: 0;
+      }
+
+      @keyframes typing-sig {
+        from {
+          width: 0;
+        }
+        to {
+          width: 100%;
+        }
+      }
+
+      @keyframes fadeInUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Cat styles */
+      .cat {
+        width: 80px;
+        height: 70px;
+        position: absolute;
+        z-index: 1001;
+      }
+
+      .cat-left {
+        left: -80px;
+        animation: cat-run-left 1s ease-out forwards;
+      }
+
+      .cat-right {
+        right: -80px;
+        transform: scaleX(-1);
+        animation: cat-run-right 1s ease-out forwards;
+      }
+
+      .cat-body {
+        width: 100%;
+        height: 100%;
+        border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
+        position: relative;
+        border: 3px solid #000;
+      }
+
+      .cat-white .cat-body {
+        background-color: #ffffff;
+      }
+
+      .cat-yellow .cat-body {
+        background-color: #f4d03f;
+      }
+
+      .cat-head {
+        width: 110%;
+        height: 110%;
+        border-radius: 50%;
+        position: absolute;
+        top: -55%;
+        left: -5%;
+        border: 3px solid #000;
+        transform: scale(0.95);
+      }
+
+      .cat-white .cat-head {
+        background-color: #ffffff;
+      }
+
+      .cat-yellow .cat-head {
+        background-color: #f4d03f;
+      }
+
+      .cat-ear {
+        width: 0;
+        height: 0;
+        border-left: 18px solid transparent;
+        border-right: 18px solid transparent;
+        border-bottom: 32px solid;
+        position: absolute;
+        top: -18px;
+        border-radius: 50% 50% 0 0;
+        z-index: -1;
+      }
+
+      .cat-white .cat-ear {
+        border-bottom-color: #ffffff;
+      }
+
+      .cat-yellow .cat-ear {
+        border-bottom-color: #f4d03f;
+      }
+
+      .cat-ear-inner {
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-bottom: 20px solid #ffb6c1;
+        position: absolute;
+        top: -10px;
+        z-index: -1;
+      }
+
+      .cat-ear.left {
+        left: 10px;
+        transform: rotate(-30deg);
+      }
+
+      .cat-ear.right {
+        right: 10px;
+        transform: rotate(30deg);
+      }
+
+      .cat-ear-inner.left {
+        left: -8px;
+      }
+
+      .cat-ear-inner.right {
+        right: -8px;
+      }
+
+      .cat-eye {
+        width: 16px;
+        height: 20px;
+        background-color: #000;
+        border-radius: 50%;
+        position: absolute;
+        top: 20px;
+      }
+
+      .cat-eye::after {
+        content: "";
+        width: 6px;
+        height: 6px;
+        background-color: #fff;
+        border-radius: 50%;
+        position: absolute;
+        top: 3px;
+        left: 3px;
+      }
+
+      .cat-eye::before {
+        content: "";
+        width: 3px;
+        height: 3px;
+        background-color: #fff;
+        border-radius: 50%;
+        position: absolute;
+        top: 12px;
+        left: 8px;
+      }
+
+      .cat-eye.left {
+        left: 18px;
+        transform: rotate(-5deg);
+      }
+
+      .cat-eye.right {
+        right: 18px;
+        transform: rotate(5deg);
+      }
+
+      .cat-nose {
+        width: 10px;
+        height: 6px;
+        background-color: #ff9999;
+        border: 2px solid #000;
+        border-radius: 50%;
+        position: absolute;
+        top: 38px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .cat-mouth {
+        width: 12px;
+        height: 8px;
+        border-radius: 0 0 100% 100%;
+        border-bottom: 2px solid #000;
+        position: absolute;
+        top: 46px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .cat-blush {
+        width: 20px;
+        height: 10px;
+        background-color: #ffb6c1;
+        border-radius: 50%;
+        position: absolute;
+        top: 40px;
+        opacity: 0.7;
+      }
+
+      .cat-blush.left {
+        left: 4px;
+      }
+
+      .cat-blush.right {
+        right: 4px;
+      }
+
+      .cat-tail {
+        width: 55px;
+        height: 12px;
+        position: absolute;
+        bottom: 20px;
+        right: -45px;
+        transform-origin: left center;
+        animation: tail-wag 1s ease-in-out infinite alternate;
+        border-radius: 6px;
+        border: 3px solid #000;
+      }
+
+      .cat-white .cat-tail {
+        background-color: #ffffff;
+      }
+
+      .cat-yellow .cat-tail {
+        background-color: #f4d03f;
+      }
+
+      .cat-tail::after {
+        content: "";
+        position: absolute;
+        width: 18px;
+        height: 12px;
+        right: -3px;
+        top: -3px;
+        border-radius: 0 6px 6px 0;
+      }
+
+      .cat-white .cat-tail::after {
+        background-color: #ffb6c1;
+        border: 2px solid #000;
+      }
+
+      .cat-yellow .cat-tail::after {
+        background-color: #f4d03f;
+        border: 2px solid #000;
+      }
+
+      @keyframes tail-wag {
+        from {
+          transform: rotate(-5deg);
+        }
+        to {
+          transform: rotate(35deg);
+        }
+      }
+
+      .cat-leg {
+        width: 12px;
+        height: 18px;
+        position: absolute;
+        bottom: -12px;
+        border-radius: 0 0 6px 6px;
+        border: 3px solid #000;
+      }
+
+      .cat-white .cat-leg {
+        background-color: #ffffff;
+      }
+
+      .cat-yellow .cat-leg {
+        background-color: #f4d03f;
+      }
+
+      .cat-leg.front-left {
+        left: 15px;
+        animation: leg-move 0.5s infinite alternate;
+      }
+
+      .cat-leg.front-right {
+        left: 35px;
+        animation: leg-move 0.5s infinite alternate-reverse;
+      }
+
+      .cat-leg.back-left {
+        right: 35px;
+        animation: leg-move 0.5s infinite alternate-reverse;
+      }
+
+      .cat-leg.back-right {
+        right: 15px;
+        animation: leg-move 0.5s infinite alternate;
+      }
+
+      @keyframes leg-move {
+        from {
+          height: 18px;
+        }
+        to {
+          height: 12px;
+        }
+      }
+
+      @keyframes cat-run-left {
+        from {
+          left: -150px;
+        }
+        to {
+          left: -80px;
+        }
+      }
+
+      @keyframes cat-run-right {
+        from {
+          right: -150px;
+        }
+        to {
+          right: -80px;
+        }
+      }
+
+      .rope {
+        height: 3px;
+        background-color: #ff9999;
+        position: absolute;
+        top: 50%;
+        z-index: 99;
+      }
+
+      .rope-left {
+        right: 100%;
+        width: 70px;
+        animation: rope-extend-left 1s ease-out forwards;
+      }
+
+      .rope-right {
+        left: 100%;
+        width: 70px;
+        animation: rope-extend-right 1s ease-out forwards;
+      }
+
+      @keyframes rope-extend-left {
+        from {
+          width: 0;
+        }
+        to {
+          width: 70px;
+        }
+      }
+
+      @keyframes rope-extend-right {
+        from {
+          width: 0;
+        }
+        to {
+          width: 70px;
+        }
+      }
+
+      /* Falling petals styles */
+      .falling-petals-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+        overflow: hidden;
+      }
+
+      .falling-petal {
+        position: absolute;
+        opacity: 0.8;
+        border-radius: 50% 0 50% 50%;
+        box-shadow: inset 0 0 10px rgba(255, 0, 0, 0.3);
+        will-change: transform;
+      }
+
+      .falling-petal.small {
+        width: 10px;
+        height: 10px;
+      }
+
+      .falling-petal.medium {
+        width: 20px;
+        height: 20px;
+      }
+
+      .falling-petal.large {
+        width: 30px;
+        height: 30px;
+      }
+
+      @keyframes falling {
+        0% {
+          transform: translateY(-50px) rotate(45deg) scale(1);
+        }
+        100% {
+          transform: translateY(calc(100vh + 50px)) rotate(360deg) scale(0.8);
+        }
+      }
+
+      .gift-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, #1a1a1a, #000000);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        cursor: pointer;
+        transition: opacity 0.5s ease;
+      }
+
+      .gift-box {
+        width: 200px;
+        height: 200px;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: all 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        animation: float-box 3s ease-in-out infinite;
+      }
+
+      @keyframes float-box {
+        0%,
+        100% {
+          transform: translateY(0) rotate(0deg);
+        }
+        50% {
+          transform: translateY(-20px) rotate(2deg);
+        }
+      }
+
+      .gift-box.opening {
+        transform: scale(1.5) translateY(-100px) rotateX(-45deg);
+        opacity: 0;
+        filter: brightness(2);
+      }
+
+      .gift-base {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        background: linear-gradient(
+          135deg,
+          #ff3366 0%,
+          #ff0066 50%,
+          #cc0052 100%
+        );
+        border: 6px solid #ff99cc;
+        border-radius: 15px;
+        box-shadow: 0 0 30px rgba(255, 51, 102, 0.5),
+          inset 0 0 20px rgba(255, 255, 255, 0.3);
+        overflow: hidden;
+      }
+
+      .gift-base::before {
+        content: "";
+        position: absolute;
+        width: 150%;
+        height: 150%;
+        background: linear-gradient(
+          45deg,
+          transparent 40%,
+          rgba(255, 255, 255, 0.2) 50%,
+          transparent 60%
+        );
+        animation: shine 3s infinite;
+      }
+
+      @keyframes shine {
+        0% {
+          transform: translateX(-100%) translateY(-100%);
+        }
+        50% {
+          transform: translateX(100%) translateY(100%);
+        }
+        100% {
+          transform: translateX(100%) translateY(100%);
+        }
+      }
+
+      .gift-lid {
+        width: 220px;
+        height: 50px;
+        position: absolute;
+        top: -25px;
+        left: -10px;
+        background: linear-gradient(
+          135deg,
+          #ff3366 0%,
+          #ff0066 50%,
+          #cc0052 100%
+        );
+        border: 6px solid #ff99cc;
+        border-radius: 10px;
+        transform-origin: center bottom;
+        animation: float-lid 3s ease-in-out infinite;
+        box-shadow: 0 0 20px rgba(255, 51, 102, 0.5),
+          inset 0 0 10px rgba(255, 255, 255, 0.3);
+      }
+
+      .gift-box.opening .gift-lid {
+        animation: open-lid 1s forwards;
+      }
+
+      @keyframes open-lid {
+        0% {
+          transform: rotateX(0);
+        }
+        100% {
+          transform: rotateX(-180deg) translateY(-100px);
+          opacity: 0;
+        }
+      }
+
+      .gift-ribbon {
+        position: absolute;
+        background: linear-gradient(to right, #ff99cc, #ffb3d9);
+        box-shadow: 0 0 10px rgba(255, 153, 204, 0.5);
+      }
+
+      .ribbon-vertical {
+        width: 30px;
+        height: 200px;
+        left: 85px;
+        top: 0;
+        border-radius: 15px;
+      }
+
+      .ribbon-horizontal {
+        width: 200px;
+        height: 30px;
+        left: 0;
+        top: 85px;
+        border-radius: 15px;
+      }
+
+      .ribbon-knot {
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        left: 70px;
+        top: 70px;
+        background-color: #ff99cc;
+        border-radius: 50%;
+        z-index: 2;
+        box-shadow: 0 0 20px rgba(255, 153, 204, 0.5);
+        transform-style: preserve-3d;
+        transition: transform 1s;
+      }
+
+      .gift-box.opening .ribbon-knot {
+        transform: scale(1.5) rotate(180deg);
+        opacity: 0;
+      }
+
+      .ribbon-knot::before,
+      .ribbon-knot::after {
+        content: "";
+        position: absolute;
+        width: 80px;
+        height: 40px;
+        background: #ff99cc;
+        border-radius: 20px;
+      }
+
+      .ribbon-knot::before {
+        top: 10px;
+        left: -10px;
+        transform: rotate(-45deg);
+      }
+
+      .ribbon-knot::after {
+        top: 10px;
+        left: -10px;
+        transform: rotate(45deg);
+      }
+
+      .gift-sparkles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      .gift-box.opening .gift-sparkles .sparkle {
+        animation: sparkle-out 1s forwards;
+      }
+
+      @keyframes sparkle-out {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        50% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(2);
+          opacity: 0;
+        }
+      }
+
+      .gift-text {
+        color: #ff99cc;
+        font-size: 28px;
+        margin-top: 50px;
+        text-align: center;
+        text-shadow: 0 0 10px rgba(255, 153, 204, 0.5),
+          0 0 20px rgba(255, 153, 204, 0.3), 0 0 30px rgba(255, 153, 204, 0.2);
+        font-weight: bold;
+        animation: pulse 2s ease-in-out infinite;
+        transform: translateZ(0);
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.8;
+          transform: scale(1.05);
+        }
+      }
+
+      .main-content {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 1s;
+      }
+
+      .main-content.visible {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      @media (max-width: 640px) {
+        .gift-box {
+          transform: scale(0.75);
+        }
+
+        .message-wrapper {
+          width: 100%;
+          padding: 0 0.5rem;
+        }
+
+        .poem-wrapper {
+          width: 100%;
+          padding: 0 0.5rem;
+        }
+
+        .signature-wrapper {
+          width: 100%;
+          padding: 0 0.5rem;
+        }
+
+        .cat {
+          transform: scale(0.8);
+        }
+
+        .cat-left {
+          left: -60px;
+        }
+
+        .cat-right {
+          right: -60px;
+        }
+
+        .rope-left,
+        .rope-right {
+          width: 50px;
+        }
+      }
+    </style>
+  </head>
+  <body class="flex items-center justify-center min-h-screen">
+    <div class="gift-overlay" id="giftOverlay">
+      <div class="gift-box">
+        <div class="gift-lid"></div>
+        <div class="gift-base">
+          <div class="gift-ribbon ribbon-vertical"></div>
+          <div class="gift-ribbon ribbon-horizontal"></div>
+          <div class="ribbon-knot"></div>
+          <div class="gift-sparkles">
+            <div class="sparkle" style="top: 20%; left: 20%"></div>
+            <div class="sparkle" style="top: 20%; right: 20%"></div>
+            <div class="sparkle" style="bottom: 20%; left: 20%"></div>
+            <div class="sparkle" style="bottom: 20%; right: 20%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="gift-text">Chạm vào hộp quà để mở</div>
+    </div>
+    <audio id="backgroundMusic" loop>
+      <source src="music.mp3" type="audio/mpeg" />
+    </audio>
+    <div class="main-content" id="mainContent">
+      <div class="falling-petals-container" id="petals-container"></div>
+      <div class="text-center px-4 sm:px-0">
+        <div class="heart-container">
+          <div class="heart" id="heart"></div>
+        </div>
+        <div class="message-container">
+          <div class="message-wrapper">
+            <div class="cat cat-left cat-white">
+              <div class="cat-body">
+                <div class="cat-head">
+                  <div class="cat-ear left">
+                    <div class="cat-ear-inner left"></div>
+                  </div>
+                  <div class="cat-ear right">
+                    <div class="cat-ear-inner right"></div>
+                  </div>
+                  <div class="cat-eye left"></div>
+                  <div class="cat-eye right"></div>
+                  <div class="cat-nose"></div>
+                  <div class="cat-mouth"></div>
+                  <div class="cat-blush left"></div>
+                  <div class="cat-blush right"></div>
+                </div>
+                <div class="cat-tail"></div>
+                <div class="cat-leg front-left"></div>
+                <div class="cat-leg front-right"></div>
+                <div class="cat-leg back-left"></div>
+                <div class="cat-leg back-right"></div>
+              </div>
+            </div>
+            <div class="rope rope-left"></div>
+            <p class="text-lg sm:text-2xl font-semibold text-red-500 message">
+              <span class="typing-text" id="typing-text"></span>
+            </p>
+            <div class="rope rope-right"></div>
+            <div class="cat cat-right cat-yellow">
+              <div class="cat-body">
+                <div class="cat-head">
+                  <div class="cat-ear left">
+                    <div class="cat-ear-inner left"></div>
+                  </div>
+                  <div class="cat-ear right">
+                    <div class="cat-ear-inner right"></div>
+                  </div>
+                  <div class="cat-eye left"></div>
+                  <div class="cat-eye right"></div>
+                  <div class="cat-nose"></div>
+                  <div class="cat-mouth"></div>
+                  <div class="cat-blush left"></div>
+                  <div class="cat-blush right"></div>
+                </div>
+                <div class="cat-tail"></div>
+                <div class="cat-leg front-left"></div>
+                <div class="cat-leg front-right"></div>
+                <div class="cat-leg back-left"></div>
+                <div class="cat-leg back-right"></div>
+              </div>
+            </div>
+          </div>
+          <div class="poem-wrapper">
+            <p class="text-base sm:text-xl font-semibold text-pink-400 poem">
+              <span class="typing-poem" id="typing-poem"></span>
+            </p>
+          </div>
+          <div class="signature-wrapper">
+            <p
+              class="text-base sm:text-xl font-semibold text-red-400 signature"
+            >
+              <span class="typing-signature" id="typing-signature"></span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const heart = document.getElementById("heart");
+      const giftOverlay = document.getElementById("giftOverlay");
+      const mainContent = document.getElementById("mainContent");
+      const giftBox = document.querySelector(".gift-box");
+
+      // Heart shape coordinates
+      function createHeartCoords(count) {
+        const coords = [];
+        const heartShape = (t) => {
+          const x = 16 * Math.pow(Math.sin(t), 3);
+          const y = -(
+            13 * Math.cos(t) -
+            5 * Math.cos(2 * t) -
+            2 * Math.cos(3 * t) -
+            Math.cos(4 * t)
+          );
+          return { x: x * 8 + 300, y: y * 8 + 300 };
+        };
+
+        for (let i = 0; i < count; i++) {
+          const t = (i / count) * Math.PI * 2;
+          coords.push(heartShape(t));
+        }
+        return coords;
+      }
+
+      // Create roses
+      const roseCount = 60;
+      const coords = createHeartCoords(roseCount);
+
+      function createRoses() {
+        const totalDelay = roseCount * 50; // Total time to create all roses
+
+        for (let i = 0; i < roseCount; i++) {
+          setTimeout(() => {
+            const rose = document.createElement("div");
+            rose.className = "rose";
+            rose.style.left = `${coords[i].x - 30}px`;
+            rose.style.top = `${coords[i].y - 30}px`;
+            rose.style.animationDelay = `${i * 50}ms`;
+
+            const roseInner = document.createElement("div");
+            roseInner.className = "rose-inner";
+
+            // Create petals
+            const petalCount = 8;
+            for (let j = 0; j < petalCount; j++) {
+              const petal = document.createElement("div");
+              petal.className = "petal";
+              const angle = (j / petalCount) * 360;
+              petal.style.transform = `rotateY(${angle}deg) rotateX(60deg) translateZ(5px)`;
+              roseInner.appendChild(petal);
+            }
+
+            // Add sparkles
+            for (let s = 0; s < 3; s++) {
+              const sparkle = document.createElement("div");
+              sparkle.className = "sparkle";
+              sparkle.style.left = `${Math.random() * 60}px`;
+              sparkle.style.top = `${Math.random() * 60}px`;
+              sparkle.style.animationDelay = `${Math.random() * 4}s`;
+              rose.appendChild(sparkle);
+            }
+
+            // Add fragrance particles
+            for (let f = 0; f < 5; f++) {
+              setTimeout(() => {
+                createFragrance(rose);
+              }, f * 1000 + Math.random() * 2000);
+            }
+
+            rose.appendChild(roseInner);
+            heart.appendChild(rose);
+
+            // Start typing animation after the last rose is created and bloomed
+            if (i === roseCount - 1) {
+              setTimeout(() => {
+                typeWriter();
+              }, 3000); // Wait additional 3 seconds after last rose for bloom animation
+            }
+          }, i * 50);
+        }
+      }
+
+      // Continuously create fragrance
+      let fragranceInterval;
+
+      function createFragrance(rose) {
+        const fragrance = document.createElement("div");
+        fragrance.className = "fragrance";
+
+        // Random position within the rose
+        const left = 20 + Math.random() * 20;
+        const top = 20 + Math.random() * 20;
+
+        // Random direction
+        const xDir = Math.random() * 2 - 1;
+        const yDir = Math.random();
+
+        fragrance.style.setProperty("--x-dir", xDir);
+        fragrance.style.setProperty("--y-dir", yDir);
+        fragrance.style.left = `${left}px`;
+        fragrance.style.top = `${top}px`;
+
+        rose.appendChild(fragrance);
+
+        // Remove after animation completes
+        setTimeout(() => {
+          if (rose.contains(fragrance)) {
+            rose.removeChild(fragrance);
+          }
+        }, 6000);
+      }
+
+      // Typing animation for main message
+      const typingText = document.getElementById("typing-text");
+      const typingPoem = document.getElementById("typing-poem");
+      const typingSignature = document.getElementById("typing-signature");
+      const message = "Tặng Hà, chúc Hà ngày mới vui vẻ nhé!";
+      const poemLines = [
+        "On this special Women's Day,",
+        "Wish the beautiful lady a joyful day!",
+        "May your heart be filled with cheer,",
+        "Happiness follows you throughout the year.",
+        "",
+        "Strength and grace in all you do,",
+        "The world is brighter because of you.",
+        "Today we celebrate your light so true,",
+        "Happy Women's Day to beautiful you!",
+        "",
+        "- From a Tao deptrai",
+      ];
+      const signature = "- From a Tao deptrai";
+      let i = 0;
+      let currentLine = 0;
+      let j = 0;
+
+      function typeWriter() {
+        if (i < message.length) {
+          typingText.textContent = message.substring(0, i + 1);
+          i++;
+          setTimeout(typeWriter, 100);
+        } else {
+          setTimeout(startPoemTyping, 500);
+        }
+      }
+
+      function startPoemTyping() {
+        // Clear existing content
+        typingPoem.innerHTML = "";
+
+        // Create spans for each line
+        poemLines.forEach((line) => {
+          const lineSpan = document.createElement("span");
+          lineSpan.className = "poem-line";
+          lineSpan.textContent = line;
+          typingPoem.appendChild(lineSpan);
+        });
+
+        // Start typing the first line
+        typeNextLine();
+      }
+
+      function typeNextLine() {
+        if (currentLine < poemLines.length) {
+          const lines = typingPoem.getElementsByClassName("poem-line");
+          lines[currentLine].classList.add("typing");
+
+          // Auto scroll to the new line
+          const messageContainer = document.querySelector(".message-container");
+          const currentLineElement = lines[currentLine];
+          const containerRect = messageContainer.getBoundingClientRect();
+          const lineRect = currentLineElement.getBoundingClientRect();
+
+          // Calculate if the line is below the viewport
+          if (lineRect.bottom > window.innerHeight) {
+            window.scrollTo({
+              top:
+                window.scrollY + (lineRect.bottom - window.innerHeight) + 100,
+              behavior: "smooth",
+            });
+          }
+
+          // Also scroll the poem wrapper
+          const poemWrapper = document.querySelector(".poem-wrapper");
+          const scrollOptions = {
+            top:
+              currentLineElement.offsetTop -
+              poemWrapper.offsetHeight / 2 +
+              currentLineElement.offsetHeight / 2,
+            behavior: "smooth",
+          };
+          poemWrapper.scrollTo(scrollOptions);
+
+          currentLine++;
+          setTimeout(typeNextLine, 2000); // Wait 2 seconds before typing next line
+        }
+      }
+
+      // Create falling petals
+      const petalsContainer = document.getElementById("petals-container");
+      const petalColors = [
+        "#ff3366", // Pink
+        "#ff0033", // Red
+        "#ff6666", // Light red
+        "#ff0066", // Deep pink
+        "#ff99cc", // Light pink
+      ];
+
+      const petalSizes = ["small", "medium", "large"];
+
+      function createFallingPetal() {
+        const petal = document.createElement("div");
+
+        // Random size class
+        const sizeClass =
+          petalSizes[Math.floor(Math.random() * petalSizes.length)];
+        petal.className = `falling-petal ${sizeClass}`;
+
+        // Random position along the width of the screen
+        petal.style.left = `${Math.random() * 100}%`;
+
+        // Start from random positions above the viewport
+        petal.style.top = `${-50 - Math.random() * 100}px`;
+
+        // Random color from our palette
+        petal.style.backgroundColor =
+          petalColors[Math.floor(Math.random() * petalColors.length)];
+
+        // Random opacity
+        petal.style.opacity = 0.5 + Math.random() * 0.5;
+
+        // Random rotation
+        const initialRotation = Math.random() * 360;
+        petal.style.transform = `rotate(${initialRotation}deg)`;
+
+        // Random animation duration between 5s and 15s
+        const fallDuration = 5 + Math.random() * 10;
+
+        // Create custom keyframes for this petal
+        const keyframeStyle = document.createElement("style");
+        const keyframeName = `fall-${Date.now()}-${Math.floor(
+          Math.random() * 1000
+        )}`;
+
+        // Random horizontal movement
+        const startX = Math.random() * 100 - 50; // -50 to 50
+        const midX1 = startX + (Math.random() * 150 - 75); // -75 to 75 from startX
+        const midX2 = midX1 + (Math.random() * 150 - 75); // -75 to 75 from midX1
+        const endX = midX2 + (Math.random() * 150 - 75); // -75 to 75 from midX2
+
+        // Random rotation
+        const midRotation = initialRotation + Math.random() * 180;
+        const endRotation = midRotation + Math.random() * 180;
+
+        keyframeStyle.textContent = `
+          @keyframes ${keyframeName} {
+            0% {
+              transform: translate(0, 0) rotate(${initialRotation}deg);
+            }
+            25% {
+              transform: translate(${midX1}px, ${
+          window.innerHeight * 0.25
+        }px) rotate(${initialRotation + 90}deg);
+            }
+            50% {
+              transform: translate(${midX2}px, ${
+          window.innerHeight * 0.5
+        }px) rotate(${midRotation}deg);
+            }
+            75% {
+              transform: translate(${endX}px, ${
+          window.innerHeight * 0.75
+        }px) rotate(${midRotation + 90}deg);
+            }
+            100% {
+              transform: translate(${endX + (Math.random() * 50 - 25)}px, ${
+          window.innerHeight + 50
+        }px) rotate(${endRotation}deg);
+            }
+          }
+        `;
+        document.head.appendChild(keyframeStyle);
+
+        // Apply the animation
+        petal.style.animation = `${keyframeName} ${fallDuration}s ease-in-out forwards`;
+
+        // Add to container
+        petalsContainer.appendChild(petal);
+
+        // Remove after animation completes
+        setTimeout(() => {
+          if (petalsContainer.contains(petal)) {
+            petalsContainer.removeChild(petal);
+          }
+          if (document.head.contains(keyframeStyle)) {
+            document.head.removeChild(keyframeStyle);
+          }
+        }, fallDuration * 1000);
+      }
+
+      // Create initial petals
+      for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+          createFallingPetal();
+        }, i * 100);
+      }
+
+      // Continuously create new petals
+      setInterval(createFallingPetal, 200);
+
+      giftOverlay.addEventListener("click", () => {
+        const giftBox = document.querySelector(".gift-box");
+        const backgroundMusic = document.getElementById("backgroundMusic");
+        giftBox.classList.add("opening");
+
+        // Create additional sparkles during opening animation
+        for (let i = 0; i < 20; i++) {
+          setTimeout(() => {
+            const sparkle = document.createElement("div");
+            sparkle.className = "sparkle";
+            sparkle.style.left = Math.random() * 100 + "%";
+            sparkle.style.top = Math.random() * 100 + "%";
+            document.querySelector(".gift-sparkles").appendChild(sparkle);
+          }, i * 50);
+        }
+
+        setTimeout(() => {
+          giftOverlay.style.opacity = "0";
+          setTimeout(() => {
+            giftOverlay.style.display = "none";
+            mainContent.classList.add("visible");
+            // Play background music
+            backgroundMusic.play().catch((error) => {
+              console.log("Audio playback failed:", error);
+            });
+            // Start heart animation
+            createRoses();
+            // Start fragrance interval
+            fragranceInterval = setInterval(() => {
+              const roses = document.querySelectorAll(".rose");
+              if (roses.length > 0) {
+                const randomRose =
+                  roses[Math.floor(Math.random() * roses.length)];
+                createFragrance(randomRose);
+              }
+            }, 300);
+          }, 500);
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>
